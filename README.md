@@ -1,29 +1,18 @@
-# sounfuryのblog
+# vue-quick-starter
+vue自用
 
-This template should help get you started developing with Vue 3 in Vite.
+这是一个Vue自用模板。该模板旨在帮助开发者快速启动Vue项目，包含了常用的配置和示例代码，方便进行二次开发和定制。
 
-## Recommended IDE Setup
+## 特性
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+- 预配置的Vue CLI
+- 常用插件和库的集成
+- 示例代码和目录结构
+- 易于定制和扩展
 
-## Customize configuration
+## 安装
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
+git clone https://github.com/yourusername/vue-quick-starter.git
+cd vue-quick-starter
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
