@@ -1,0 +1,7 @@
+@font-face {
+  font-family: 'Alimama'; /* 字体名称 */
+  src: url('./AlimamaDongFangDaKai-Regular.woff2') format('woff2'), /* 首选现代浏览器使用 woff2 */
+       url('./AlimamaDongFangDaKai-Regular.woff') format('woff');  /* 兼容旧浏览器 */
+  font-weight: 600; /* 字重 */
+  font-display: swap; /* 性能优化：用系统字体替代加载字体 */
+}

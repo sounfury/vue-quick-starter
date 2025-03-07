@@ -1,0 +1,101 @@
+name: 部署博客
+on:
+  push:
+    branches:
+      - main  # 仅在推送到 main 分支时触发
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4  # 使用最新的 v4 版本
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.16.0'  # 使用 Node.js v18.16.0 版本
+
+    - name: 安装依赖
+      run: npm install
+
+    - name: 构建项目
+      run: npm run build:prod  # 使用生产模式进行构建
+
+    - name: 检查环境变量
+      run: |
+        echo "检查 GitHub Secrets 配置"
+        test -n "${{ secrets.SSH_PRIVATE_KEY }}" || (echo "SSH_PRIVATE_KEY 未设置" && exit 1)
+        test -n "${{ secrets.SERVER_HOST }}" || (echo "SERVER_HOST 未设置" && exit 1)
+        test -n "${{ secrets.BLOG_DEPLOY_PATH }}" || (echo "BLOG_DEPLOY_PATH 未设置" && exit 1)
+
+    - name: 配置 SSH
+      run: |
+        # 创建 SSH 目录
+        mkdir -p ~/.ssh
+
+        # 写入私钥
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+        # 设置权限
+        chmod 600 ~/.ssh/id_rsa
+
+        # 生成公钥文件
+        ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+
+        # 检查公钥是否成功生成
+        test -s ~/.ssh/id_rsa.pub || (echo "公钥生成失败！" && exit 1)
+
+        # 显示私钥和公钥文件信息
+        echo "私钥文件详情:"
+        ls -l ~/.ssh/id_rsa
+        echo "公钥文件详情:"
+        ls -l ~/.ssh/id_rsa.pub
+
+
+    - name: 详细 SSH 诊断
+      run: |
+        # 显示私钥信息
+        echo "私钥文件详情:"
+        ls -l ~/.ssh/id_rsa
+        
+        # 显示公钥指纹
+        echo "公钥指纹:"
+        ssh-keygen -l -f ~/.ssh/id_rsa.pub
+        
+        # 显示私钥类型
+        echo "私钥类型:"
+        ssh-keygen -l -f ~/.ssh/id_rsa
+
+    - name: 测试 SSH 连接
+      env:
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      run: |
+        # 详细 SSH 连接测试
+        ssh -vvv \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            root@$SERVER_HOST "echo 'SSH 连接成功！'"
+
+    - name: 部署到服务器
+      env:
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        DEPLOY_PATH: ${{ secrets.BLOG_DEPLOY_PATH }}
+      run: |
+        # 使用 rsync 部署，添加详细输出
+        rsync -avz \
+              -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+              dist/ \
+              root@$SERVER_HOST:$DEPLOY_PATH
+
+    - name: 验证部署
+      env:
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        DEPLOY_PATH: ${{ secrets.BLOG_DEPLOY_PATH }}
+      run: |
+        # 在服务器上检查部署结果
+        ssh -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            root@$SERVER_HOST "
+            ls -l $DEPLOY_PATH
+            echo '部署目录文件列表:'
+            "
